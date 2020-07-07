@@ -22,31 +22,11 @@ float origin_sphere(vec3 p, float radius) {
     return length(p) - radius;
 }
 
-float horizontal_plane(vec3 p, float height) {
-    return p.y - height;
-}
-
-float origin_box(vec3 p, vec3 dimensions, float corner_radius) {
-    vec3 a = abs(p);
-    return length(max(abs(p) - dimensions, 0.0)) - corner_radius;
-}
-
 void closest_material(inout float dist, inout ma mat, float new_dist, ma new_mat) {
     if (new_dist < dist) {
         dist = new_dist;
         mat = new_mat;
     }
-}
-
-float repeated_boxes_xz(vec3 p, vec3 dimensions, float corner_radius, float modulo) {
-    p.xz = mod(p.xz - 0.5 * modulo, modulo) - 0.5 * modulo;
-    return origin_box(p, dimensions, corner_radius);
-}
-
-float floor(vec3 p) {
-    return min(
-        horizontal_plane(p, -1),
-        repeated_boxes_xz(vec3(p.x, p.y+2, p.z), vec3(1), 0.1, 5));
 }
 
 float capsule_cone(vec3 p, vec3 a, vec3 b, float r1, float r2) {
@@ -70,12 +50,13 @@ float signed_pseudo_random(inout float random_seed) {
 
 float tree(vec3 p, float random_seed, out ma mat) {
     p.y += 1;
-    float dist = 1e100;
+    float sphere_radius = 5;
+    float dist = origin_sphere(p+vec3(0,sphere_radius,0), sphere_radius);
     float thickness = 0.1;
     float length = 0.9 + 0.2 * signed_pseudo_random(random_seed);
     vec3 base_color = vec3(0.8, 0.4, 0.2);
     vec3 leaf_color = vec3(0.5, 1.0, 0.5) * (0.85 + 0.15*signed_pseudo_random(random_seed));
-    vec3 color = base_color;
+    vec3 color = vec3(0.3, 0.2, 0.1);
     int iterations = 20;
     p.xz *= rotate(mod(random_seed * 11.111, PI));
     float rotate1 = 0.5 + signed_pseudo_random(random_seed) * 0.2;
@@ -129,7 +110,6 @@ float scene(vec3 p, out ma mat) {
     //float dist = capsule(p, vec3(0), vec3(0,1,0), 0.1);
     //float dist = repeated_trees(p, 5, mat);
     float dist = overlapping_repeated_trees(p, mat);
-    closest_material(dist, mat, floor(p), ma(0.1, 0.9, 0, 10, 0.0, vec3(0.8)));
     return dist;
 }
 
