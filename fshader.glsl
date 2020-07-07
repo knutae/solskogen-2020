@@ -88,6 +88,8 @@ float repeated_trees(vec3 p, float modulo, out ma mat) {
     p.y += 3*sin(round(divvec.x)) + 2*sin(round(divvec.y*0.5));
     float random_seed = round(12321 + 12345.67 * divvec.x + 98765.43 * (divvec.y+1000));
     p.xz = modvec;
+    p.x += 0.2*sin(random_seed);
+    p.z += 0.1*sin(random_seed*2+10);
     return tree(p, random_seed, mat);
 }
 
