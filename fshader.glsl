@@ -89,15 +89,30 @@ float tree(vec3 p, out ma mat) {
     return dist;
 }
 
-float repeated_trees(vec3 p, out ma mat) {
-    p.xz = mod(p.xz + vec2(2.5), 5.0) - vec2(2.5);
+float repeated_trees(vec3 p, float modulo, out ma mat) {
+    p.xz = mod(p.xz + vec2(modulo/2), modulo) - vec2(modulo/2);
     return tree(p, mat);
+}
+
+float overlapping_repeated_trees(vec3 p, out ma mat) {
+    float modulo = 3;
+    float dist = repeated_trees(p, modulo*2, mat);
+    ma new_mat;
+    float new_dist;
+    new_dist = repeated_trees(p + vec3(modulo,0,0), modulo*2, new_mat);
+    closest_material(dist, mat, new_dist, new_mat);
+    new_dist = repeated_trees(p + vec3(0,0,modulo), modulo*2, new_mat);
+    closest_material(dist, mat, new_dist, new_mat);
+    new_dist = repeated_trees(p + vec3(modulo,0,modulo), modulo*2, new_mat);
+    closest_material(dist, mat, new_dist, new_mat);
+    return dist;
 }
 
 float scene(vec3 p, out ma mat) {
     //float dist = origin_sphere(p, 1);
     //float dist = capsule(p, vec3(0), vec3(0,1,0), 0.1);
-    float dist = repeated_trees(p, mat);
+    //float dist = repeated_trees(p, 5, mat);
+    float dist = overlapping_repeated_trees(p, mat);
     closest_material(dist, mat, floor(p), ma(0.1, 0.9, 0, 10, 0.0, vec3(0.8)));
     return dist;
 }
@@ -192,7 +207,7 @@ vec3 apply_reflections(vec3 color, ma mat, vec3 p, vec3 direction) {
 }
 
 vec3 render(float u, float v) {
-    vec3 eye_position = vec3(0, 3, 4);
+    vec3 eye_position = vec3(0, 4, 4);
     vec3 forward = normalize(vec3(0, 0.5, -3) - eye_position);
     vec3 up = vec3(0.0, 1.0, 0.0);
     vec3 right = normalize(cross(up, forward));
