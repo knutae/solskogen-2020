@@ -29,11 +29,13 @@ void closest_material(inout float dist, inout ma mat, float new_dist, ma new_mat
     }
 }
 
-float capsule_cone(vec3 p, vec3 a, vec3 b, float r1, float r2) {
+float tree_segment(vec3 p, vec3 a, vec3 b, float r1, float r2, float wobbliness, float wobbles) {
     vec3 pa = p - a;
     vec3 ba = b - a;
     float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
-    return length(pa - ba*h) - mix(r1, r2, h);
+    float angle = atan(p.x, p.z);
+    float r = mix(r1, r2, h);
+    return length(pa - ba*h) - r + wobbliness*r*(sin(angle*wobbles) + sin(h*PI*6)/2);
 }
 
 mat2 rotate(float a) {
@@ -65,7 +67,7 @@ float tree(vec3 p, float random_seed, out ma mat) {
     float length_multiplier = 0.75 + 0.01 * signed_pseudo_random(random_seed);
     for (int depth = 0; depth < iterations; depth++) {
         float next_thickness = thickness * thickness_multiplier;
-        float new_dist = capsule_cone(p, vec3(0), vec3(0, length, 0), thickness, next_thickness);
+        float new_dist = tree_segment(p, vec3(0), vec3(0, length, 0), thickness, next_thickness, 0.03/(depth+1), 16);
         if (new_dist < dist) {
             color = mix(base_color, leaf_color, depth / float(iterations-1));
         }
