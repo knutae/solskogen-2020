@@ -85,8 +85,8 @@ float repeated_trees(vec3 p, float modulo, out ma mat) {
     vec2 modvec = mod(p.xz + vec2(modulo/2), modulo) - vec2(modulo/2);
     vec2 divvec = p.xz - modvec;
     // Each tree position (divvec) is used to initialize randomness for that tree: rounding is important to make it stable
-    p.y += sin(round(divvec.x * 1000 + divvec.y * 500));
-    float random_seed = round(12321 + 12345.67 * divvec.x + 98765.43 * divvec.y);
+    p.y += 3*sin(round(divvec.x)) + 2*sin(round(divvec.y*0.5));
+    float random_seed = round(12321 + 12345.67 * divvec.x + 98765.43 * (divvec.y+1000));
     p.xz = modvec;
     return tree(p, random_seed, mat);
 }
@@ -204,7 +204,7 @@ vec3 apply_reflections(vec3 color, ma mat, vec3 p, vec3 direction) {
 
 vec3 render(float u, float v) {
     vec3 eye_position = vec3(0, 4, 4);
-    vec3 forward = normalize(vec3(0, 0.5, -3) - eye_position);
+    vec3 forward = normalize(vec3(0, 1, -3) - eye_position);
     vec3 up = vec3(0.0, 1.0, 0.0);
     vec3 right = normalize(cross(up, forward));
     up = cross(-right, forward);
