@@ -22,6 +22,11 @@ float origin_sphere(vec3 p, float radius) {
     return length(p) - radius;
 }
 
+float wobbly_sphere(vec3 p, float radius, float wobbliness) {
+    return length(p) - radius
+        + wobbliness * radius * (sin(p.x * 123) + sin(p.y * 456) + sin(p.z * 789));
+}
+
 void closest_material(inout float dist, inout ma mat, float new_dist, ma new_mat) {
     if (new_dist < dist) {
         dist = new_dist;
@@ -53,18 +58,18 @@ float signed_pseudo_random(inout float random_seed) {
 float tree(vec3 p, float random_seed, out ma mat) {
     p.y += 1;
     float sphere_radius = 5;
-    float dist = origin_sphere(p+vec3(0,sphere_radius,0), sphere_radius);
+    float dist = wobbly_sphere(p+vec3(0,sphere_radius,0), sphere_radius, 0.005);
     float thickness = 0.1;
     float length = 0.9 + 0.2 * signed_pseudo_random(random_seed);
     vec3 base_color = vec3(0.8, 0.4, 0.2);
     vec3 leaf_color = vec3(0.5, 1.0, 0.5) * (0.85 + 0.15*signed_pseudo_random(random_seed));
-    vec3 color = vec3(0.3, 0.2, 0.1);
     int iterations = 20;
     p.xz *= rotate(mod(random_seed * 11.111, PI));
     float rotate1 = 0.5 + signed_pseudo_random(random_seed) * 0.2;
     float rotate2 = 0.5 + signed_pseudo_random(random_seed) * 0.1;
     float thickness_multiplier = 0.8;
     float length_multiplier = 0.75 + 0.01 * signed_pseudo_random(random_seed);
+    vec3 color = vec3(0.3, 0.4 + 0.2 * signed_pseudo_random(random_seed), 0.1);
     for (int depth = 0; depth < iterations; depth++) {
         float next_thickness = thickness * thickness_multiplier;
         float new_dist = tree_segment(p, vec3(0), vec3(0, length, 0), thickness, next_thickness, 0.03/(depth+1), 16);
