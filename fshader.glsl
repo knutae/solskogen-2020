@@ -62,17 +62,28 @@ mat2 rotate(float a) {
     return mat2(c,-s,s,c);
 }
 
-float tree(vec3 p, out ma mat) {
+float signed_pseudo_random(inout float random_seed) {
+    float result = sin(random_seed);
+    random_seed += 10 * result;
+    return result;
+}
+
+float tree(vec3 p, float random_seed, out ma mat) {
     p.y += 1;
     float dist = 1e100;
     float thickness = 0.1;
-    float length = 1.0;
+    float length = 0.9 + 0.2 * signed_pseudo_random(random_seed);
     vec3 base_color = vec3(0.8, 0.4, 0.2);
-    vec3 leaf_color = vec3(0.5, 1.0, 0.5);
+    vec3 leaf_color = vec3(0.5, 1.0, 0.5) * (0.85 + 0.15*signed_pseudo_random(random_seed));
     vec3 color = base_color;
     int iterations = 20;
+    p.xz *= rotate(mod(random_seed * 11.111, PI));
+    float rotate1 = 0.5 + signed_pseudo_random(random_seed) * 0.2;
+    float rotate2 = 0.5 + signed_pseudo_random(random_seed) * 0.1;
+    float thickness_multiplier = 0.8;
+    float length_multiplier = 0.75 + 0.01 * signed_pseudo_random(random_seed);
     for (int depth = 0; depth < iterations; depth++) {
-        float next_thickness = thickness * 0.8;
+        float next_thickness = thickness * thickness_multiplier;
         float new_dist = capsule_cone(p, vec3(0), vec3(0, length, 0), thickness, next_thickness);
         if (new_dist < dist) {
             color = mix(base_color, leaf_color, depth / float(iterations-1));
@@ -80,18 +91,23 @@ float tree(vec3 p, out ma mat) {
         dist = min(dist, new_dist);
         p.y -= length;
         p.x = abs(p.x);
-        p.xy *= rotate(0.5 + .02*depth);
-        p.zx *= rotate(0.5 + .1*depth);
+        p.xy *= rotate(rotate1 + .02*depth);
+        p.zx *= rotate(rotate2 + .1*depth);
         thickness = next_thickness;
-        length *= 0.75;
+        length *= (0.75 + 0.01*signed_pseudo_random(random_seed));
     }
     mat = ma(0.1, 0.9, 0.8, 10, 0, color);
     return dist;
 }
 
 float repeated_trees(vec3 p, float modulo, out ma mat) {
-    p.xz = mod(p.xz + vec2(modulo/2), modulo) - vec2(modulo/2);
-    return tree(p, mat);
+    vec2 modvec = mod(p.xz + vec2(modulo/2), modulo) - vec2(modulo/2);
+    vec2 divvec = p.xz - modvec;
+    // Each tree position (divvec) is used to initialize randomness for that tree: rounding is important to make it stable
+    p.y += sin(round(divvec.x * 1000 + divvec.y * 500));
+    float random_seed = round(12321 + 12345.67 * divvec.x + 98765.43 * divvec.y);
+    p.xz = modvec;
+    return tree(p, random_seed, mat);
 }
 
 float overlapping_repeated_trees(vec3 p, out ma mat) {
