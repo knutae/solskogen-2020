@@ -58,7 +58,7 @@ mat2 rotate(float a) {
 
 float signed_pseudo_random(inout float random_seed) {
     float result = sin(random_seed);
-    random_seed = round(mod(random_seed*123, 123453));
+    random_seed = round(mod(random_seed*127, 123453));
     return result;
 }
 
@@ -100,8 +100,8 @@ float repeated_trees(vec3 p, float modulo, out ma mat) {
     vec2 divvec = p.xz - modvec;
     // Each tree position (divvec) is used to initialize randomness for that tree: rounding is important to make it stable
     p.y += 3*sin(round(divvec.x)) + 2*sin(round(divvec.y*0.5));
-    float random_seed = round(12321 + 13.01 * (divvec.x+567) + 17.01 * (divvec.y+987));
-    random_seed = round(mod(random_seed, 123453));
+    float random_seed = round(1234 + 3*round(divvec.x) + 5*round(divvec.y));
+    random_seed = round(mod(random_seed*127, 123453));
     p.xz = modvec;
     p.x += 0.2*sin(random_seed);
     p.z += 0.1*sin(random_seed*2+10);
