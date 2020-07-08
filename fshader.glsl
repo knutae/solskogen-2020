@@ -184,7 +184,7 @@ float body(vec3 p) {
 float bird(vec3 p) {
     //p.y -= 3;
     p += vec3(6,-4.3,7);
-    p.yz *= rotate(PI/2 + 0.2);
+    p.yz *= rotate(PI/2 + 0.15);
     p.xy *= rotate(-PI/4 - 0.1);
     return min(wings(p), min(tail(p), body(p)));
 }
