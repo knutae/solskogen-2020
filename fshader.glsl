@@ -24,7 +24,7 @@ float origin_sphere(vec3 p, float radius) {
 
 float wobbly_sphere(vec3 p, float radius, float wobbliness) {
     return length(p) - radius
-        + wobbliness * radius * (sin(p.x * 123) + sin(p.y * 456) + sin(p.z * 789));
+        + wobbliness * radius * (sin(p.x * 123) + sin(p.z * 456));
 }
 
 void closest_material(inout float dist, inout ma mat, float new_dist, ma new_mat) {
@@ -62,7 +62,7 @@ float signed_pseudo_random(inout float random_seed) {
     return result;
 }
 
-float tree(vec3 p, float random_seed, out ma mat) {
+float tree(vec3 p, float random_seed, vec3 ground_color, out ma mat) {
     p.y += 1;
     float sphere_radius = 5;
     float dist = wobbly_sphere(p+vec3(0,sphere_radius,0), sphere_radius, 0.005);
@@ -76,7 +76,7 @@ float tree(vec3 p, float random_seed, out ma mat) {
     float rotate2 = 0.5 + signed_pseudo_random(random_seed) * 0.1;
     float thickness_multiplier = 0.8;
     float length_multiplier = 0.75 + 0.01 * signed_pseudo_random(random_seed);
-    vec3 color = vec3(0.3, 0.5 + 0.1 * signed_pseudo_random(random_seed), 0.1);
+    vec3 color = ground_color;
     for (int depth = 0; depth < iterations; depth++) {
         float next_thickness = thickness * thickness_multiplier;
         float new_dist = tree_segment(p, vec3(0), vec3(0, length, 0), thickness, next_thickness, 0.03/(depth+1), 16);
@@ -96,6 +96,7 @@ float tree(vec3 p, float random_seed, out ma mat) {
 }
 
 float repeated_trees(vec3 p, float modulo, out ma mat) {
+    vec3 ground_color = vec3(0.3, 0.5 + 0.2 * (sin(p.x * 0.2 + 3) + sin(p.z*0.1)), 0.1);
     vec2 modvec = mod(p.xz + vec2(modulo/2), modulo) - vec2(modulo/2);
     vec2 divvec = p.xz - modvec;
     // Each tree position (divvec) is used to initialize randomness for that tree: rounding is important to make it stable
@@ -105,7 +106,7 @@ float repeated_trees(vec3 p, float modulo, out ma mat) {
     p.xz = modvec;
     p.x += 0.2*sin(random_seed);
     p.z += 0.1*sin(random_seed*2+10);
-    return tree(p, random_seed, mat);
+    return tree(p, random_seed, ground_color, mat);
 }
 
 float overlapping_repeated_trees(vec3 p, out ma mat) {
