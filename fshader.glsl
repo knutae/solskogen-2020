@@ -250,7 +250,7 @@ float soft_shadow(vec3 p, vec3 light_direction, float sharpness) {
     return res;
 }
 
-const vec3 background_color = vec3(0.7, 0.85, 1.0);
+const vec3 background_color = vec3(0.65, 0.8, 1.0);
 
 vec3 apply_fog(vec3 color, float total_distance) {
     return mix(color, background_color, 1.0 - exp(-0.007 * total_distance));
