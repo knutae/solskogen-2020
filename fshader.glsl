@@ -289,8 +289,9 @@ vec3 apply_reflections(vec3 color, ma mat, vec3 p, vec3 direction) {
 }
 
 vec3 render(float u, float v) {
-    vec3 eye_position = vec3(0, 4, 4);
-    vec3 forward = normalize(vec3(0, 1, -3) - eye_position);
+    vec3 eye_position = vec3(0, 4, 3);
+    //vec3 forward = normalize(vec3(0, 1, -3) - eye_position);
+    vec3 forward = normalize(vec3(0,-0.35,-1));
     vec3 up = vec3(0.0, 1.0, 0.0);
     vec3 right = normalize(cross(up, forward));
     up = cross(-right, forward);
