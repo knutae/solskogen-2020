@@ -11,7 +11,6 @@ struct ma {
     float D; // diffuse
     float P; // specular
     float S; // shininess
-    float R; // reflection
     vec3 C; // RGB color
 };
 
@@ -91,7 +90,7 @@ float tree(vec3 p, float random_seed, vec3 ground_color, out ma mat) {
         thickness = next_thickness;
         length *= length_multiplier;
     }
-    mat = ma(0.1, 0.9, 0.8, 10, 0, color);
+    mat = ma(0.1, 0.9, 0.8, 10, color);
     return dist;
 }
 
@@ -196,7 +195,7 @@ float scene(vec3 p, out ma mat) {
     //float dist = capsule(p, vec3(0), vec3(0,1,0), 0.1);
     //float dist = repeated_trees(p, 5, mat);
     float dist = overlapping_repeated_trees(p, mat);
-    closest_material(dist, mat, bird(p), ma(0.1, 0.9, 0.1, 10, 0, vec3(0.3)));
+    closest_material(dist, mat, bird(p), ma(0.1, 0.9, 0.1, 10, vec3(0.3)));
     return dist;
 }
 
@@ -266,29 +265,6 @@ vec3 phong_lighting(vec3 p, ma mat, vec3 ray_direction) {
     return min(mat.C * (diffuse + mat.A) + vec3(specular), vec3(1.0));
 }
 
-vec3 apply_reflections(vec3 color, ma mat, vec3 p, vec3 direction) {
-    float reflection = mat.R;
-    for (int i = 0; i < 3; i++) {
-        if (reflection <= 0.01) {
-            break;
-        }
-        vec3 reflection_color = background_color;
-        direction = ray_reflection(direction, estimate_normal(p));
-        vec3 start_pos = p;
-        p += 0.05 * direction;
-        if (ray_march(p, direction, mat)) {
-            reflection_color = phong_lighting(p, mat, direction);
-            reflection_color = apply_fog(reflection_color, length(p - start_pos));
-            color = mix(color, reflection_color, reflection);
-            reflection *= mat.R;
-        } else {
-            color = mix(color, reflection_color, reflection);
-            break;
-        }
-    }
-    return color;
-}
-
 vec3 render(float u, float v) {
     vec3 eye_position = vec3(0, 4.5, 3);
     //vec3 forward = normalize(vec3(0, 1, -3) - eye_position);
@@ -304,7 +280,6 @@ vec3 render(float u, float v) {
     ma mat;
     if (ray_march(p, direction, mat)) {
         color = phong_lighting(p, mat, direction);
-        color = apply_reflections(color, mat, p, direction);
         color = apply_fog(color, length(p - start_pos));
     }
     return color;
