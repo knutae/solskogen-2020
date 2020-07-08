@@ -134,12 +134,14 @@ float feather(vec3 p, float len) {
 float wings(vec3 p) {
     p.y = abs(p.y);
     float dist = 1e100;
-    p.xy *= rotate(0.09);
+    p.xy *= rotate(0.08);
+    p.zy *= rotate(0.03);
     for (int i = 0; i < 8; i++) {
         float fl = 1 - pow(0.1*abs(i-4),2);
         dist = min(dist, feather(vec3(p.x, p.y-fl, p.z), fl));
-        p.x += 0.05;
-        p.xy *= rotate(-0.03);
+        p.x += 0.02;
+        p.xy *= rotate(-0.04);
+        p.zy *= rotate(0.01);
     }
     return dist;
 }
@@ -148,10 +150,13 @@ float tail(vec3 p) {
     float dist = 1e100;
     p.xy *= rotate(-PI/2 + 0.1);
     p.y += 0.4;
-    p.x -= 0.02;
-    for (int i = 0; i < 4; i++) {
-        dist = min(dist, feather(vec3(p.x, p.y-1, p.z), 0.3 - 0.05*abs(i-1.5)));
-        p.x += 0.01;
+    p.x -= 0.015;
+    p.z += 0.1;
+    p.zy *= rotate(0.15);
+    for (int i = 0; i < 6; i++) {
+        float fl = 0.4 - 0.02*abs(i-2.5);
+        dist = min(dist, feather(vec3(p.x, p.y-0.5-fl, p.z), fl));
+        p.x += 0.005;
         p.xy *= rotate(-0.05);
     }
     return dist;
@@ -177,6 +182,7 @@ float body(vec3 p) {
 }
 
 float bird(vec3 p) {
+    //p.y -= 3;
     p += vec3(6,-4.3,7);
     p.yz *= rotate(PI/2 + 0.2);
     p.xy *= rotate(-PI/4 - 0.1);
