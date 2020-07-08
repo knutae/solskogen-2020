@@ -100,7 +100,7 @@ float repeated_trees(vec3 p, float modulo, out ma mat) {
     vec2 modvec = mod(p.xz + vec2(modulo/2), modulo) - vec2(modulo/2);
     vec2 divvec = p.xz - modvec;
     // Each tree position (divvec) is used to initialize randomness for that tree: rounding is important to make it stable
-    p.y += 3*sin(round(divvec.x)) + 2*sin(round(divvec.y*0.5));
+    p.y += 4*sin(round(divvec.x)) + 2*sin(round(divvec.y*0.5)) + 3*sin(round(divvec.y*0.02 + 3));
     float random_seed = round(1234 + 3*round(divvec.x) + 5*round(divvec.y));
     random_seed = round(mod(random_seed*127, 123453));
     p.xz = modvec;
@@ -185,7 +185,7 @@ float body(vec3 p) {
 
 float bird(vec3 p) {
     //p.y -= 3;
-    p += vec3(6,-4.3,7);
+    p += vec3(6,-4.8,7);
     p.yz *= rotate(PI/2 + 0.15);
     p.xy *= rotate(-PI/4 - 0.1);
     return min(wings(p), min(tail(p), body(p)));
@@ -253,7 +253,7 @@ float soft_shadow(vec3 p, vec3 light_direction, float sharpness) {
 const vec3 background_color = vec3(0.7, 0.85, 1.0);
 
 vec3 apply_fog(vec3 color, float total_distance) {
-    return mix(color, background_color, 1.0 - exp(-0.01 * total_distance));
+    return mix(color, background_color, 1.0 - exp(-0.007 * total_distance));
 }
 
 vec3 phong_lighting(vec3 p, ma mat, vec3 ray_direction) {
@@ -290,7 +290,7 @@ vec3 apply_reflections(vec3 color, ma mat, vec3 p, vec3 direction) {
 }
 
 vec3 render(float u, float v) {
-    vec3 eye_position = vec3(0, 4, 3);
+    vec3 eye_position = vec3(0, 4.5, 3);
     //vec3 forward = normalize(vec3(0, 1, -3) - eye_position);
     vec3 forward = normalize(vec3(0,-0.35,-1));
     vec3 up = vec3(0.0, 1.0, 0.0);
