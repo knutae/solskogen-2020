@@ -58,7 +58,7 @@ mat2 rotate(float a) {
 
 float signed_pseudo_random(inout float random_seed) {
     float result = sin(random_seed);
-    random_seed += 10 * result;
+    random_seed = round(mod(random_seed*123, 123453));
     return result;
 }
 
@@ -71,12 +71,12 @@ float tree(vec3 p, float random_seed, out ma mat) {
     vec3 base_color = vec3(0.8, 0.4, 0.2);
     vec3 leaf_color = vec3(0.5, 1.0, 0.5) * (0.85 + 0.15*signed_pseudo_random(random_seed));
     int iterations = 20;
-    p.xz *= rotate(mod(random_seed * 11.111, PI));
+    p.xz *= rotate(mod(random_seed * 11.111, PI*2));
     float rotate1 = 0.5 + signed_pseudo_random(random_seed) * 0.2;
     float rotate2 = 0.5 + signed_pseudo_random(random_seed) * 0.1;
     float thickness_multiplier = 0.8;
     float length_multiplier = 0.75 + 0.01 * signed_pseudo_random(random_seed);
-    vec3 color = vec3(0.3, 0.4 + 0.2 * signed_pseudo_random(random_seed), 0.1);
+    vec3 color = vec3(0.3, 0.5 + 0.1 * signed_pseudo_random(random_seed), 0.1);
     for (int depth = 0; depth < iterations; depth++) {
         float next_thickness = thickness * thickness_multiplier;
         float new_dist = tree_segment(p, vec3(0), vec3(0, length, 0), thickness, next_thickness, 0.03/(depth+1), 16);
@@ -89,7 +89,7 @@ float tree(vec3 p, float random_seed, out ma mat) {
         p.xy *= rotate(rotate1 + .02*depth);
         p.zx *= rotate(rotate2 + .1*depth);
         thickness = next_thickness;
-        length *= (0.75 + 0.01*signed_pseudo_random(random_seed));
+        length *= length_multiplier;
     }
     mat = ma(0.1, 0.9, 0.8, 10, 0, color);
     return dist;
@@ -100,7 +100,8 @@ float repeated_trees(vec3 p, float modulo, out ma mat) {
     vec2 divvec = p.xz - modvec;
     // Each tree position (divvec) is used to initialize randomness for that tree: rounding is important to make it stable
     p.y += 3*sin(round(divvec.x)) + 2*sin(round(divvec.y*0.5));
-    float random_seed = round(12321 + 12345.67 * divvec.x + 98765.43 * (divvec.y+1000));
+    float random_seed = round(12321 + 13.01 * (divvec.x+567) + 17.01 * (divvec.y+987));
+    random_seed = round(mod(random_seed, 123453));
     p.xz = modvec;
     p.x += 0.2*sin(random_seed);
     p.z += 0.1*sin(random_seed*2+10);
