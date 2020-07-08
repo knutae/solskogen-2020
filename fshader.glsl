@@ -133,7 +133,7 @@ float feather(vec3 p, float len) {
 
 float wings(vec3 p) {
     p.y = abs(p.y);
-    float dist = 1e100;
+    float dist = 1e10;
     p.xy *= rotate(0.08);
     p.zy *= rotate(0.03);
     for (int i = 0; i < 8; i++) {
@@ -147,7 +147,7 @@ float wings(vec3 p) {
 }
 
 float tail(vec3 p) {
-    float dist = 1e100;
+    float dist = 1e10;
     p.xy *= rotate(-PI/2 + 0.1);
     p.y += 0.4;
     p.x -= 0.015;
