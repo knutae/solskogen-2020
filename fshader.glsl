@@ -34,6 +34,13 @@ void closest_material(inout float dist, inout ma mat, float new_dist, ma new_mat
     }
 }
 
+float capsule_cone(vec3 p, vec3 a, vec3 b, float r1, float r2) {
+    vec3 pa = p - a;
+    vec3 ba = b - a;
+    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
+    return length(pa - ba*h) - mix(r1, r2, h);
+ }
+
 float tree_segment(vec3 p, vec3 a, vec3 b, float r1, float r2, float wobbliness, float wobbles) {
     vec3 pa = p - a;
     vec3 ba = b - a;
@@ -114,11 +121,74 @@ float overlapping_repeated_trees(vec3 p, out ma mat) {
     return dist;
 }
 
+float ellipsoid(vec3 p, vec3 r) {
+    float k0 = length(p/r);
+    float k1 = length(p/(r*r));
+    return k0*(k0-1)/k1;
+}
+
+float feather(vec3 p, float len) {
+    return ellipsoid(p, vec3(0.1, len, 0.02));
+}
+
+float wings(vec3 p) {
+    p.y = abs(p.y);
+    float dist = 1e100;
+    p.xy *= rotate(0.09);
+    for (int i = 0; i < 8; i++) {
+        float fl = 1 - pow(0.1*abs(i-4),2);
+        dist = min(dist, feather(vec3(p.x, p.y-fl, p.z), fl));
+        p.x += 0.05;
+        p.xy *= rotate(-0.03);
+    }
+    return dist;
+}
+
+float tail(vec3 p) {
+    float dist = 1e100;
+    p.xy *= rotate(-PI/2 + 0.1);
+    p.y += 0.4;
+    p.x -= 0.02;
+    for (int i = 0; i < 4; i++) {
+        dist = min(dist, feather(vec3(p.x, p.y-1, p.z), 0.3 - 0.05*abs(i-1.5)));
+        p.x += 0.01;
+        p.xy *= rotate(-0.05);
+    }
+    return dist;
+}
+
+float infinite_cone( vec3 p, float a )
+{
+    vec2 c = vec2(sin(a), cos(a));
+    vec2 q = vec2( length(p.xz), -p.y );
+    float d = length(q-c*max(dot(q,c), 0.0));
+    return d * ((q.x*c.y-q.y*c.x<0.0)?-1.0:1.0);
+}
+
+float body(vec3 p) {
+    vec3 q = p;
+    q.xy *= rotate(PI/2);
+    q.y -= 0.5;
+    float head = infinite_cone(q, PI/6);
+    float beak = capsule_cone(p, vec3(0.6,0,-0.05), vec3(0.36,0,0.013), 0, 0.05);
+    return min(
+        max(ellipsoid(p, vec3(0.5,0.2,0.1)), head),
+        beak);
+}
+
+float bird(vec3 p) {
+    p += vec3(6,-4.3,7);
+    p.yz *= rotate(PI/2 + 0.2);
+    p.xy *= rotate(-PI/4 - 0.1);
+    return min(wings(p), min(tail(p), body(p)));
+}
+
 float scene(vec3 p, out ma mat) {
     //float dist = origin_sphere(p, 1);
     //float dist = capsule(p, vec3(0), vec3(0,1,0), 0.1);
     //float dist = repeated_trees(p, 5, mat);
     float dist = overlapping_repeated_trees(p, mat);
+    closest_material(dist, mat, bird(p), ma(0.1, 0.9, 0.1, 10, 0, vec3(0.3)));
     return dist;
 }
 
