@@ -1,5 +1,7 @@
 # Eternal forest executable graphic
 
+![Lots of trees and a bird](preview.png)
+
 Raymarched forest written in GLSL and C for Ubuntu. This was my entry in the 4k executable graphics compo for the [Solskogen](https://www.solskogen.no/) 2020 demoparty.
 
 Tools used:
